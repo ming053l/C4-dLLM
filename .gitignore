@@ -1,0 +1,31 @@
+# Upstream clones kept locally for peer comparisons; each has its own repository and history.
+third_party/
+
+# The lab's own job queues, GPU scheduler and paper-sync daemon. They encode this group's cluster
+# and the state of a manuscript in progress, so they stay on disk and out of the release.
+internal/
+
+# Scheduler and job logs, and superseded exploration code.
+logs/
+archive/
+
+__pycache__/
+*.pyc
+
+# Per-step trajectory dumps, hundreds of megabytes and regenerable with --record-traj.
+results/**/*.pt
+
+# Result sets no table, figure or appendix of the paper draws on. MMaDA belongs to an appendix that
+# is written but not compiled into the current draft, and the rest are exploratory arms.
+results/mmada/
+results/mmada_invalid/
+results/mmada_short/
+results/blockctrl/
+results/wino_traj/
+results/tps_unverified/
+
+# Failure analysis held back from the public tree for now.
+NEGATIVE_RESULTS.md
+
+# Measured sweep output. Experimental data, not part of the released method.
+results/

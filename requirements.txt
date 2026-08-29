@@ -1,0 +1,10 @@
+# Versions this tree was run on. Every number in the paper was produced under these, so pin them
+# first if a result does not reproduce, before suspecting the code.
+torch==2.7.1
+transformers==4.46.3
+datasets==2.17.1
+numpy==1.22.4
+
+# Only for scoring generated text under a frozen external model (score_ppl.py, Appendix H).
+# The decoding and evaluation paths do not need it.
+# accelerate is pulled in by transformers on multi-GPU hosts; leave it to that resolution.
