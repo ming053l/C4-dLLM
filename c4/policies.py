@@ -18,11 +18,10 @@ def taec_adaptive(run, changes, progress, gamma=16.0, p_min=3, min_progress=0.10
     return run >= need
 
 
-def conf_floor(run, changes, conf, gamma=16.0, p_min=3, tau=0.9, **_):
-    """R1 candidate 1: replace the time floor with a confidence-corroboration requirement.
-    Deployed as CVEE (paper Eq.~4, $\\tau_{\\text{CVEE}}=0.7,\\gamma=2.0,p_{\\min}=3$): this IS the
-    "Full CVEE" arm of the CVEE component ablation (C4 paper Appendix component_ablation.tex) --
-    confidence AND adaptive-stability jointly required."""
+def conf_floor(run, changes, conf, gamma=2.0, p_min=3, tau=0.7, **_):
+    """CVEE's joint exit gate (paper Eq.~4): the candidate span's confidence must clear `tau` AND
+    its argmax run must reach `max(p_min, ceil(gamma * changes))`. The defaults are the deployed
+    values, so calling it without parameters gives the gate the paper reports."""
     if conf is None or conf < tau:
         return False
     need = max(p_min, math.ceil(gamma * changes))

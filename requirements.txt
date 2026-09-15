@@ -5,6 +5,4 @@ transformers==4.46.3
 datasets==2.17.1
 numpy==1.22.4
 
-# Only for scoring generated text under a frozen external model (score_ppl.py, Appendix H).
-# The decoding and evaluation paths do not need it.
 # accelerate is pulled in by transformers on multi-GPU hosts; leave it to that resolution.

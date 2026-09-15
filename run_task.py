@@ -87,7 +87,7 @@ def main():
     ap.add_argument("--n", type=int, default=None)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--skip", type=int, default=None)
-    ap.add_argument("--block-accel-tau", type=float, default=0.9)
+    ap.add_argument("--block-accel-tau", type=float, default=0.8)
     ap.add_argument("--struct-mode", choices=["off", "window", "risk"], default="off")
     ap.add_argument("--holes", type=int, default=1)
     ap.add_argument("--confirm", action="store_true")

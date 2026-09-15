@@ -21,17 +21,11 @@ costs no additional forward pass. CCTC is deliberately absent: it decides which 
 commit, which is the decision WINO's accept-and-revoke rule already makes, and stacking them would
 be two rules fighting over one choice rather than two rules composing.
 """
-import os
-import sys
-
 import torch
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(HERE, "c4"))
-
-from .decode import (_char_offset_to_token_idx,  # noqa: E402
-                           _find_first_subseq_within, _find_last_subseq)
-from .policies import POLICIES  # noqa: E402
+from .decode import (_char_offset_to_token_idx,
+                     _find_first_subseq_within, _find_last_subseq)
+from .policies import POLICIES
 
 # The deployed CVEE configuration, imported from nowhere on purpose: these are the frozen values
 # quoted in the paper, and a composition that re-tuned them would not be evidence about CVEE.
