@@ -3,6 +3,8 @@
 Accelerated decoding for masked diffusion language models, from *Commit Locally, Exit Globally:
 Coordinating Adaptive Sampling and Early Exit in Diffusion Language Models*.
 
+[Paper (PDF)](paper/C4_preprint.pdf) · [arXiv](https://arxiv.org/abs/2607.28166) · [Project page](https://c4-dllm.github.io/)
+
 A diffusion LM exposes a provisional prediction at every denoising step, and on many tasks the
 candidate answer inside it stops changing well before the step schedule is exhausted. C⁴ turns that
 into two separate decisions, each with its own gate.
