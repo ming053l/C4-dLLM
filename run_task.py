@@ -84,7 +84,8 @@ def build_parser():
                        help="override L; T follows it (one token per step at baseline)")
     shape.add_argument("--block-length", type=int, default=None, help="override B")
     shape.add_argument("--prefix-cache", action="store_true",
-                       help="reuse the prompt's KV across steps (needs a cache-capable backbone)")
+                       help="reuse the prompt's KV across steps (approximate; needs a backbone that\n"
+                            "returns past_key_values, which neither stock checkpoint does)")
 
     out = ap.add_argument_group("output")
     out.add_argument("--save-text", action="store_true",

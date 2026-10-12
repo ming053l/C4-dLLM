@@ -7,8 +7,10 @@ only, so the decoding loop needs no knowledge of the cache.
 This is an approximation, not a re-parameterisation: LLaDA and Dream attend bidirectionally, so
 in an uncached pass the prompt's hidden states (and hence its keys and values above the first
 layer) also depend on the generation region. Treat the cached arm as its own configuration.
-It also needs a backbone whose forward accepts `use_cache` / `past_key_values`; the stock
-LLaDA-8B-Instruct remote code rejects both ("The kvcache is not suppotred for MDM").
+It also needs a backbone whose forward accepts `use_cache` / `past_key_values` and returns the
+cache. Neither stock checkpoint does: LLaDA-8B-Instruct's remote code asserts "The kvcache is not
+suppotred for MDM", and Dream-v0-Instruct-7B returns a MaskedLMOutput without `past_key_values`
+(both checked with tools/check_equivalence.py, where the original release fails the same way).
 
 Unlike Fast-dLLM's DualCache (`generate(..., dual_cache=True)`), nothing right of the live block
 is frozen, so the confidences CVEE reads across its search window stay current.
