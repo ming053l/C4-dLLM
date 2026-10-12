@@ -51,7 +51,6 @@ LLADA_PLAN = {
     "holes_0": (DEPLOYED.replace("--holes 1", "--holes 0"), ARM_TASKS),
     "holes_2": (DEPLOYED.replace("--holes 1", "--holes 2"), ARM_TASKS),
     "shape_L128_B32": (DEPLOYED + " --gen-length 128 --block-length 32", ARM_TASKS),
-    "prefix_cache": (DEPLOYED + " --prefix-cache", [("mmlu", 1)]),
     "api:prophet": ("--no-cvee --no-block-rule", ARM_TASKS),
     "api:sched": ("--no-cvee --no-block-rule", ARM_TASKS),
     "api:fastdllm_floor": ("--no-cvee --block-accel-tau 0.9 --final-too", ARM_TASKS),
@@ -61,12 +60,14 @@ LLADA_PLAN = {
 DREAM_PLAN = {
     "deployed": (DEPLOYED, [("mmlu", 4), ("gsm8k", 2), ("humaneval", 1)]),
     "baseline": ("--no-cvee --no-block-rule", [("mmlu", 2), ("gsm8k", 1)]),
-    "prefix_cache": (DEPLOYED + " --prefix-cache", [("mmlu", 2), ("gsm8k", 1)]),
 }
 SMOKE_PLAN = {"deployed": (DEPLOYED, [("mmlu", 2), ("gsm8k", 1)]),
               "baseline": ("--no-cvee --no-block-rule", [("mmlu", 1)])}
+REDUCED_PLAN = {"deployed": (DEPLOYED, ARM_TASKS),
+                "baseline": ("--no-cvee --no-block-rule", ARM_TASKS)}
 TIMING_PLAN = {"deployed": (DEPLOYED, [("mmlu", 8), ("gsm8k", 4), ("humaneval", 3)])}
-PLANS = {"llada": LLADA_PLAN, "dream": DREAM_PLAN, "smoke": SMOKE_PLAN, "timing": TIMING_PLAN}
+PLANS = {"llada": LLADA_PLAN, "dream": DREAM_PLAN, "smoke": SMOKE_PLAN, "reduced": REDUCED_PLAN,
+         "timing": TIMING_PLAN}
 PROPHET = {"early": 7.5, "mid": 5.0, "late": 2.5}
 SCHED = {"tau_mode": "cosine", "tau_high": 7.5, "tau_low": 2.5, "patience_steps": 0}
 
@@ -145,12 +146,10 @@ class _Impl:
             self.prompts = importlib.import_module("c4.prompts")
             self.extract = importlib.import_module("c4.extract")
             self.decode = importlib.import_module("c4.decode")
-            self.cache = importlib.import_module("c4.prefix_cache")
         else:
             self.tasks = importlib.import_module("c4.tasks")
             self.grading = importlib.import_module("c4.grading")
             self.decode = importlib.import_module("c4.decode")
-            self.cache = importlib.import_module("c4.prefix_cache")
 
     def loaders(self):
         return (self.prompts if self.kind == "reference" else self.tasks).LOADERS
@@ -182,8 +181,7 @@ class _Impl:
         gen_length, steps, block_length = shape
         stats = {}
         mask_id = self.rt.MASK_ID[model_name]
-        run_model = (self.cache.PrefixCachedModel(model, prompt.shape[1]) if args.prefix_cache
-                     else model)
+        run_model = model
         extra = {}
         if api == "api:prophet":
             extra["prophet_thresholds"] = PROPHET

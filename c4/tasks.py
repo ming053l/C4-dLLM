@@ -4,7 +4,7 @@ Every task is zero-shot and wrapped in the backbone's chat template. Each loader
 {"prompt_text", "gt"} dicts from a seeded shuffle of the split, starting at `skip`; the per-family
 sample size and offset in DEFAULT_N / DEFAULT_SKIP are the ones the paper's tables use.
 
-Families (Appendix "hyperparams"):
+Families (Appendix A):
 - choice:  MMLU, ARC-C, HellaSwag, WinoGrande, PIQA. Answer = first letter ("first5").
 - numeric: GSM8K, SVAMP, ASDiv, GSM-Hard. Answer = last number in the trailing 30% ("last").
 - math:    MATH-500. Answer = last \\boxed{} ("last").

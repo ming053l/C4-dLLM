@@ -21,7 +21,6 @@ from c4.cctc import CCTCConfig
 from c4.cvee import EXIT_GATES, CVEEConfig, GAMMA, P_MIN, TAU, TAIL_FRAC
 from c4.decode import generate
 from c4.grading import extract_answer, grade
-from c4.prefix_cache import PrefixCachedModel
 from c4.tasks import (DEFAULT_N, DEFAULT_SKIP, EXTRACTORS, GEN_SHAPE, LOADERS, SEARCH_MODE, TASKS,
                       build_chat_prompt)
 
@@ -79,13 +78,10 @@ def build_parser():
                       help="diagnostic: when the gate fires, re-mask the accepted span on a copy\n"
                            "and record how much one extra forward pass rebuilds (not for timing)")
 
-    shape = ap.add_argument_group("generation shape and caching")
+    shape = ap.add_argument_group("generation shape")
     shape.add_argument("--gen-length", type=int, default=None,
                        help="override L; T follows it (one token per step at baseline)")
     shape.add_argument("--block-length", type=int, default=None, help="override B")
-    shape.add_argument("--prefix-cache", action="store_true",
-                       help="reuse the prompt's KV across steps (approximate; needs a backbone that\n"
-                            "returns past_key_values, which neither stock checkpoint does)")
 
     out = ap.add_argument_group("output")
     out.add_argument("--save-text", action="store_true",
@@ -126,7 +122,7 @@ def decode_configs(args):
 
 
 def span_summary(rows):
-    """Aggregate the per-example audit of the span the gate accepted (Appendix "span control"):
+    """Aggregate the per-example audit of the span the gate accepted (Appendix C):
     `frozen_frac` is how much of it was already committed when the gate read it, `cctc_frac` how
     much of it CCTC rather than the schedule had committed."""
     if not rows:
@@ -196,10 +192,9 @@ def main():
             tokenizer(build_chat_prompt(tokenizer, doc["prompt_text"]))["input_ids"],
             device="cuda").unsqueeze(0)
         t0 = time.time()
-        run_model = PrefixCachedModel(model, prompt.shape[1]) if args.prefix_cache else model
         recorder = TrajectoryRecorder(mask_id) if args.record_traj else None
         counters.clear()  # per generation: a stale span key would be read as this example's
-        result = generate(run_model, tokenizer, prompt, gen_length=gen_length, steps=steps,
+        result = generate(model, tokenizer, prompt, gen_length=gen_length, steps=steps,
                           block_length=block_length, mask_id=mask_id,
                           logit_shift=(args.model == "dream"), cctc=cctc, cvee=cvee,
                           stats=counters, traj_recorder=recorder)
@@ -235,7 +230,7 @@ def main():
                "struct_mode": args.struct_mode, "holes": args.holes, "confirm": args.confirm,
                "final_too": args.final_too, "protect_span": args.protect_span,
                "protect_block": args.protect_block, "exit_momentum": args.exit_momentum,
-               "span_audit": span_summary(span_audit), "prefix_cache": args.prefix_cache,
+               "span_audit": span_summary(span_audit),
                "cvee": not args.no_cvee, "gate": args.gate,
                "acc": acc, "avg_nfe": nfe, "step_ratio": steps / nfe,
                "steps_per_block": steps // (gen_length // block_length), "total_steps": steps,

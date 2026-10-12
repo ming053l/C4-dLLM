@@ -84,9 +84,11 @@ class _BlockForward:
     DualCache runs one full pass at block entry and then recomputes only the live block, reusing
     the KV of everything else. In a bidirectional model this is an approximation (positions
     outside the block keep the logits they had at block entry), so it is a separate reported arm
-    (Appendix "scaling_cache"), not the same computation made faster. It needs a model whose
-    forward accepts `replace_position`, i.e. Fast-dLLM's modified LLaDA; the prompt-only cache in
-    `prefix_cache.py` is exact and works with the stock model."""
+    (Appendix G), not the same computation made faster.
+
+    DualCache needs Fast-dLLM's modified LLaDA, whose forward accepts `replace_position` and
+    returns `past_key_values`. It does not work with the stock LLaDA-8B-Instruct or
+    Dream-v0-Instruct-7B checkpoints, whose remote code supports neither."""
 
     def __init__(self, model, dual_cache):
         self.model, self.dual_cache = model, dual_cache
@@ -115,7 +117,7 @@ class _BlockForward:
 
 @torch.no_grad()
 def span_reconstruction(model, x, x0, mask_index, span, prompt_len, mask_id, logit_shift):
-    """Read-only probe (Appendix "span control"): re-mask the accepted span on a copy of the
+    """Read-only probe (Appendix C): re-mask the accepted span on a copy of the
     buffer and count how many of its tokens one extra forward pass writes back identically.
     Returns (matches, span_length); never touches `x`."""
     probe_x = torch.where(mask_index, x0, x)
@@ -174,7 +176,9 @@ def generate(model, tokenizer, prompt, *, gen_length, steps, block_length,
     """Decode one sequence.
 
     `prompt`: (1, P) token ids. `cctc=None` disables CCTC (no block rule); `cvee=None` disables
-    CVEE. `exit_rule` takes a peer stopping rule from `peer_exits` instead of CVEE. `stats`, if a
+    CVEE. `exit_rule` takes a peer stopping rule from `peer_exits` instead of CVEE.
+    `dual_cache=True` needs Fast-dLLM's modified LLaDA and fails on the stock checkpoints
+    (see `_BlockForward`). `stats`, if a
     dict, receives the CCTC counters, the step count and the CVEE span audit at the end.
     `traj_recorder`, if set, is called once per step with keyword arguments x0, true_conf, x,
     prompt_len, gen_length, global_step, num_block, local_step (observational only)."""

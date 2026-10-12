@@ -1,4 +1,4 @@
-"""CVEE: candidate-verified early exit, the global half of C4 (paper Sec. 4.1).
+"""CVEE: Confidence-Verified Early Exit, the global half of C4 (paper Sec. 4.2).
 
 At every step CVEE re-extracts the candidate answer a_t from the current prediction x0, tracks
 how long it has stayed the same (the run r_t) and how often it has changed (v_t), and reads the
@@ -11,8 +11,8 @@ Deployed values: tau_CVEE = 0.7, gamma = 2.0, p_min = 3, searched over the trail
 generation region for answers that close a response.
 
 This module holds the gate conditions, the per-sequence candidate tracker used by `generate`, and
-`CVEETracker`, the same gate packaged for a decoding loop we do not own (e.g. WINO, Appendix
-"Early Exit with WINO").
+`CVEETracker`, the same gate packaged for a decoding loop we do not own (e.g. WINO; Table 2,
+Appendix E).
 """
 import math
 from dataclasses import dataclass, field
@@ -20,7 +20,7 @@ from typing import Callable, Optional
 
 import numpy as np
 
-# Deployed CVEE configuration (paper Sec. 5.1), frozen across all tasks and both backbones.
+# Deployed CVEE configuration (paper Sec. 5), frozen across all tasks and both backbones.
 TAU, GAMMA, P_MIN, TAIL_FRAC = 0.7, 2.0, 3, 0.3
 
 
@@ -71,9 +71,9 @@ class CVEEConfig:
     region (answers that close a response), "first5" the first match starting within the first
     five tokens (multiple-choice letters), "code" the whole region (a function definition, located
     in character space). `momentum_alpha` > 0 delays the exit by ceil(alpha * sqrt(t)) steps after
-    the gate fires at step t (Appendix "fill quality", Table "momentum"). `span_recon_probe` adds
-    the read-only reconstruction diagnostic of Appendix "span control"; it costs one extra forward
-    pass per example and must not be enabled for timing runs."""
+    the gate fires at step t (Appendix H, Table 9). `span_recon_probe` adds the read-only
+    reconstruction diagnostic of Appendix C; it costs one extra forward pass per example and must
+    not be enabled for timing runs."""
     extractor: Callable[[str], Optional[str]]
     search_mode: str = "last"
     tail_frac: Optional[float] = TAIL_FRAC

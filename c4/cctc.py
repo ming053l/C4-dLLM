@@ -1,17 +1,18 @@
-"""CCTC: confidence-constrained token commitment, the local half of C4 (paper Sec. 4.2).
+"""CCTC: Commit-Core-Then-Confirm, the local half of C4 (paper Sec. 4.3).
 
 Inside each accelerated block, a masked position is *eligible* at step t when its top-1
-probability clears tau_CCTC. The reference decoder's scheduled top-k commit (branch (c) of the
-update equation) is always kept, so every step still makes progress. On top of it:
+probability clears tau_CCTC. The reference decoder's scheduled top-k commit (branch (c) of
+Eq. 7) is always kept, so every step still makes progress. On top of it:
 
 - mode "off" commits every eligible position at once: Fast-dLLM's confidence-threshold rule.
-- mode "window" commits only the boundary-anchored *core*: eligible positions with at most H
-  unresolved holes (masked, not eligible) to their left. Committed positions are transparent, so
-  the core starts at the resolved boundary. Eligible positions outside the core are *deferred*.
-- with `confirm`, a deferred position is *confirmed* one step later if it is still masked, still
-  eligible and still predicts the same token now that the core is in its context. Confirmation
-  reuses the next scheduled forward pass, so it costs nothing extra. Confirmations bypass the
-  hole budget, as in the paper's update rule.
+- mode "window" commits only the boundary-anchored *core* (Eq. 5): eligible positions with at
+  most H unresolved holes (masked, not eligible) to their left. Committed positions are
+  transparent, so the core starts at the resolved boundary. Eligible positions outside the core
+  are *deferred*.
+- with `confirm`, a deferred position is *confirmed* (Eq. 6) one step later if it is still
+  masked, still eligible and still predicts the same token now that the core is in its context.
+  Confirmation reuses the next scheduled forward pass, so it costs nothing extra. Confirmations
+  bypass the hole budget, as in Eq. 7.
 
 Everything in `CoreWindow` runs on device without host syncs.
 """
@@ -31,7 +32,7 @@ class CCTCConfig:
     positions exist but the window admits none for this many consecutive steps, commit all of them
     once. `top1_floor` replaces the scheduled top-k quota in accelerated blocks with a single
     highest-confidence commit (Fast-dLLM's own floor). `protect_span` / `protect_block` are the
-    control arms of Appendix "span control": inside the candidate span CVEE is reading (or the
+    control arms of Appendix C: inside the candidate span CVEE is reading (or the
     whole block containing it, from the first extractable candidate until the gate fires) only the
     scheduled top-k may commit. Both need CVEE."""
     tau: float = 0.8
