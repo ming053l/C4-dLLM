@@ -332,6 +332,7 @@ def compare(opts):
         group["n"] += 1
         if a is None or b is None:
             group["diff"].append(f"#{key[3]} missing on one side")
+            n_bad += 1
             continue
         diffs = [f for f in COMPARED if a.get(f) != b.get(f)]
         if "error" in a:
