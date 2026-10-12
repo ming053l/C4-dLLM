@@ -1,11 +1,16 @@
 """C4: commit locally, exit globally.
 
-`decode.generate_live` is the accelerated decoding loop. It takes a masked diffusion language model
-and returns the generated text along with the step count it actually spent, applying two gates.
-CCTC decides which token positions a step may commit; CVEE decides when the sequence may stop.
-Both are off unless their arguments are supplied, so the same function reproduces the unaccelerated
-schedule for a baseline.
+`generate` decodes one sequence with CCTC (which positions a step may commit, `cctc.py`) and
+CVEE (when the sequence may stop, `cvee.py`) layered on the reference block-wise sampler. Both are
+off unless configured, so the same call also runs the unaccelerated baseline. `generate_live` is
+the flat keyword interface of earlier releases; `CVEETracker` is the exit gate alone, for a
+decoding loop you do not own.
 """
-from .decode import generate_live, generate_full          # noqa: F401
-from .gate import CVEETracker                              # noqa: F401
-from .policies import POLICIES                             # noqa: F401
+from .cctc import CCTCConfig
+from .cvee import EXIT_GATES, POLICIES, CVEEConfig, CVEETracker
+from .decode import DecodeResult, generate, generate_live
+from .peer_exits import ProphetExit, SchEDExit
+from .trajectory import generate_full
+
+__all__ = ["generate", "generate_live", "generate_full", "DecodeResult", "CCTCConfig",
+           "CVEEConfig", "CVEETracker", "EXIT_GATES", "POLICIES", "ProphetExit", "SchEDExit"]
